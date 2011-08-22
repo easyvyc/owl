@@ -13,7 +13,6 @@ session_start();
 
 include("config.php");
 
-
 $process = new process();
 
 if(!$_GET['a']){

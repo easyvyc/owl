@@ -18,6 +18,10 @@ body {
 	width:46%;
 	margin:0px 2%;
 }
+#messages .msgs {
+	height:600px;
+	overflow:auto;
+}
 .visitor {
 	margin:3px;
 	padding:5px;
@@ -31,6 +35,11 @@ body {
 }
 .visitor[even] {
 	background:#DDD;
+}
+
+.offline {
+	color:#999;
+	border:1px dotted #DDD;
 }
 
 .new {

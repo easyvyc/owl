@@ -35,9 +35,17 @@ class messages extends table
 		return $this->db->arr($sql);
 	}
 
-	function checkUser($site_id){
+	function checkUser($site_id, $visit_id){
 		if(!is_numeric($site_id)) return false;
-		$sql = "SELECT * FROM $this->table WHERE website_id=$site_id AND readed!=1 AND direction=0";
+		if(!is_numeric($visit_id)) return false;
+		$sql = "SELECT * FROM $this->table WHERE website_id=$site_id AND visitor_id=$visit_id AND readed!=1 AND direction=0";
+		return $this->db->arr($sql);
+	}
+	
+	function listHistory($site_id, $visit_id){
+		if(!is_numeric($site_id)) return false;
+		if(!is_numeric($visit_id)) return false;
+		$sql = "SELECT * FROM $this->table WHERE website_id=$site_id AND visitor_id=$visit_id";
 		return $this->db->arr($sql);
 	}
 	

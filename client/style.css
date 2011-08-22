@@ -6,6 +6,7 @@ body {
 	font-family:Arial, Verdana, Tahoma;
 	font-size:11px;
 	overflow:hidden;
+	background: transparent;
 }
 #main {
 	height:100%;
