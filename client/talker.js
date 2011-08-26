@@ -1,8 +1,10 @@
+jQuery.support.cors = true;
+
 var $talker = {
 	interval:20000,
 	closed:true,
 	parent_window:window.top,
-	site_url:"http://talk.easywebmanager.com/",
+	site_url:window.top._OWL_SERVER_,
 	url:"server/index.php?a=",
 	auroresponded:false,
 	open:function(){
@@ -21,25 +23,24 @@ var $talker = {
 	sendMessage:function (site_id, visit_id){
 		msg = $('#txt').val();
 		if(!this.validate(msg)){
-			this.messageAlert('Nothing to send.');
+			this.messageAlert($lang.empty_message);
 			return false;
 		}
 		var $obj = this;
-		$.ajax({
-			async: false,
-			url: $obj.url + 'sendMessage&p[site_id]=' + $obj.site_id + '&p[visit_id]=' + $obj.visit_id + '&p[msg]=' + $obj.escape(msg),
-			dataType:"json",
-			success: function(conts) {
-				$obj.update(conts);
-				$obj.setOnlineStatus(conts.online);
-				if(!$obj.online) $obj.autoResponder();
-				$('#txt').val('');
-			}
-		});
+		
+		$.getJSON(
+				$obj.url + 'sendMessage&p[site_id]=' + $obj.site_id + '&p[visit_id]=' + $obj.visit_id + '&p[msg]=' + $obj.escape(msg), 
+				function(conts){
+					$obj.update(conts);
+					$obj.setOnlineStatus(conts.online);
+					if(!$obj.online) $obj.autoResponder();
+					$('#txt').val('');
+				});
+
 	},
 	autoResponder:function(){
 		if(!this.auroresponded){
-			this.update({message:'Currently we are not online.<br />Leave your message and e-mail address.<br />We will contact with you later.<br />Thank you',create_date:'',direction:0});
+			this.update({ message:$lang.auto_respond_text, create_date:'', name:'', direction:0 });
 			this.auroresponded = true;
 		}
 	},
@@ -49,25 +50,38 @@ var $talker = {
 	messageAlert:function(text){
 		alert(text);
 	},
+	loadHistory:function(){
+		var $obj = this;
+		$.getJSON(
+				$obj.url + 'getOldMessages&p[site_id]='+$obj.site_id+'&p[visit_id]='+getCookie('visit_id'), 
+				function(conts){
+					$obj.setOnlineStatus(conts[0].online);
+					if(conts.length > 1){
+						for(j=1; j<conts.length; j++){
+							$obj.update(conts[j]);
+						}
+						if($obj.closed){
+							$obj.showBaloon(conts[1].message);
+						}
+					}
+				});
+	},
 	load:function(){
 		var $obj = this;
-		$.ajax({
-			async: false,
-			url: $obj.url + "getNewMessages&p[site_id]="+$obj.site_id+"&p[visit_id]="+$obj.visit_id+"&p[time]=" + $obj.time,
-			dataType:"json",
-			success: function(conts) {
-				$obj.time = conts[0].time;
-				$obj.setOnlineStatus(conts[0].online);
-				if(conts.length > 1){
-					for(j=1; j<conts.length; j++){
-						$obj.update(conts[j]);
+		$.getJSON(
+				$obj.url + "getNewMessages&p[site_id]="+$obj.site_id+"&p[visit_id]="+$obj.visit_id+"&p[time]=" + $obj.time, 
+				function(conts){
+					$obj.time = conts[0].time;
+					$obj.setOnlineStatus(conts[0].online);
+					if(conts.length > 1){
+						for(j=1; j<conts.length; j++){
+							$obj.update(conts[j]);
+						}
+						if($obj.closed){
+							$obj.showBaloon(conts[1].message);
+						}
 					}
-					if($obj.closed){
-						$obj.showBaloon(conts[1].message);
-					}
-				}
-			}
-		});
+				});
 		call = "$talker.load()";
 		setTimeout(call, $obj.interval);
 	},
@@ -90,22 +104,19 @@ var $talker = {
 		return msg;
 	},
 	update:function(conts){
-		$("#messages .content").append("<div class='msg radius3 dir" + conts.direction + "'><em>" + conts.create_date + "</em><p>" + conts.message + "</p></div>");
+		$("#messages .content").append("<div class='msg radius3 dir" + conts.direction + "'><em>" + conts.create_date + "</em> <u>" + conts.name + "</u><p>" + conts.message + "</p></div>");
 		$("#messages").animate({ scrollTop: $("#messages").attr("scrollHeight") }, 3000);
 	},
 	registerVisit:function(){
 		var $obj = this;
-		$.ajax({
-			async: false,
-			url: $obj.url + 'registerVisitor&p[site_id]='+$obj.site_id+'&p[visit_id]='+getCookie('visit_id')+'&p[referer]='+$obj.escape(window.top.document.referrer)+'&p[url]='+$obj.escape(window.top.location),
-			success: function(id) {
-				$obj.visit_id = id;
-				setCookie('visit_id', id);
-			}
-		});
-	},
-	detectVisit:function(){
-		this.registerVisit();
+		$.getJSON(
+				$obj.url + 'registerVisitor&p[site_id]='+$obj.site_id+'&p[visit_id]='+getCookie('visit_id')+'&p[referer]='+$obj.escape(window.top.document.referrer)+'&p[url]='+$obj.escape(window.top.location), 
+				function(id){
+					$obj.visit_id = id;
+					setCookie('visit_id', id);
+					$obj.loadHistory();
+					$obj.load();
+				});
 	},
 	resetTime:function(){
 		var $obj = this;
@@ -117,43 +128,22 @@ var $talker = {
 			}
 		});		
 	},
-	loadHistory:function(){
-		var $obj = this;
-		$.ajax({
-			async: false,
-			url: $obj.url + 'getOldMessages&p[site_id]='+$obj.site_id+'&p[visit_id]='+$obj.visit_id,
-			dataType:"json",
-			success: function(conts) {
-				if(conts.length > 0){
-					for(j in conts){
-						$obj.update(conts[j]);
-					}
-					$obj.time = conts[0].time;
-					if($obj.closed){
-						$obj.showBaloon(conts[0].message);
-					}
-				}
-			}
-		});		
-	},
 	start:function(site_id){
 		this.site_id = site_id;
 		this.url = this.site_url + this.url;
-		this.detectVisit();
+		this.registerVisit();
 		this.resetTime();
 		loadcssfile(document, this.site_url + "client/style.css");
 		$('body').append("<div id='main'>" +
-				"<div id='close' onclick='javascript: $talker.close();'>close</div>" +
+				"<div id='close' onclick='javascript: $talker.close();'>" + $lang.close + "</div>" +
 				"<div id='messages' class='radius5'><div class='content'></div></div>" +
 				"<form id='form' action='javascript: void($talker.sendMessage());' >" +
-				"<input type='text' id='txt' class='radius3' placeholder='Send text message' /> <input type='submit' id='btn' value='Send' class='radius3' />" +
+				"<input type='text' id='txt' class='radius3' placeholder='" + $lang.txt_placeholder + "' /> <input type='submit' id='btn' value='" + $lang.msg_submit_btn + "' class='radius3' />" +
 				"</form></div>");
 		$obj = this;
 		if(getCookie('opened')==1){
 			this.open();
 		}
-		this.loadHistory();
-		this.load();
 	}
 }
 

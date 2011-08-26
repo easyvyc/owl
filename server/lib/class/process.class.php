@@ -7,17 +7,13 @@ class process extends basic
 		
 		basic::getInstance();
 		
-		$this->websites = new websites();
-		$this->visitors = new visitors();
-		$this->messages = new messages();
-		
 	}
 	
 	function start(){
 		
 		header("Content-Type: text/html; charset=utf-8");
 		ob_flush();
-		$_SESSION['talker_admin'] = true;
+		$_SESSION['talker_admin'] = array('id'=>1, 'name'=>'Vytautas', 'email'=>'v@adme.lt');
 		return file_get_contents(VIEWSDIR."index.tpl");
 		
 	}
@@ -29,12 +25,14 @@ class process extends basic
 	}
 	
 	function registerVisitor($p){
-		return $this->visitors->registerVisitor($p['site_id'], $p['visit_id'], $p['referer'], $p['url']);
+		return json_encode($this->visitors->registerVisitor($p['site_id'], $p['visit_id'], $p['referer'], $p['url']));
 	}
 	
 	function lastActions($p){
 
 		$arr = $this->visitors->lastActions($p['site_id'], $p['time']);
+		
+		$this->admins->registerOnline($_SESSION['talker_admin']['id']);
 		//pa($arr);
 		if(!empty($arr)) $arr[0]['time'] = $this->getTime();
 		return json_encode($arr);
@@ -49,7 +47,7 @@ class process extends basic
 
 	function sendMessage($p){
 		
-		$id = $this->messages->send($p['site_id'], $p['visit_id'], $p['msg'], ($_SESSION['talker_admin']==1?0:1), ($_SESSION['talker_admin']==1?1:0));
+		$id = $this->messages->send($p['site_id'], $p['visit_id'], $p['msg']);
 		return json_encode($this->messages->load($id));
 		
 	}
@@ -78,6 +76,7 @@ class process extends basic
 		$this->visitors->setOnline($p['site_id'], $p['visit_id']);
 		
 		$arr = $this->messages->checkUser($p['site_id'], $p['visit_id'], $p['time']);
+		if(!is_array($arr)) $arr = array();
 		foreach($arr as $i=>$val){
 			$this->messages->setReaded($val['id']);
 		}
@@ -91,8 +90,16 @@ class process extends basic
 	}
 	
 	function getOldMessages($p){
+		
 		$arr = $this->messages->listHistory($p['site_id'], $p['visit_id']);
-		if(!empty($arr)) $arr[0]['time'] = $this->getTime();
+		
+		$info['time'] = $this->getTime();
+		$info['online'] = $this->getOnline();
+		
+		if(!is_array($arr)) $arr = array(); 
+		
+		array_unshift($arr, $info);
+		
 		return json_encode($arr);
 		
 	}
@@ -102,8 +109,7 @@ class process extends basic
 	}	
 	
 	function getOnline(){
-		// TODO: padaryti kad butu galima kazkaip nustatyti ar adminas online
-		return 1;
+		return $this->admins->is_online();
 	}
 	
 }

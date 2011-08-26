@@ -4,6 +4,8 @@ class basic {
 
 	static private $_singleton;
 	
+	private $objs = array();
+	
 	/*
 	 * Basic class constructor 
 	 * */
@@ -20,6 +22,13 @@ class basic {
 			self::$_singleton = new basic();
 		}
 		return self::$_singleton;
+	}
+	
+	function __get($name){
+		if(!isset($this->objs[$name])){
+			$this->objs[$name] = new $name();
+		}
+		return $this->objs[$name];
 	}
     
 	static function sendEmail($mailto, $subject, $content, $fromEmail='', $fromName='', $content_type='text/plain', $attachements=array()){

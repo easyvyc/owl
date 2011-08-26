@@ -41,7 +41,7 @@ body {
 	padding:2px;
 	background:#EEE;
 }
-#messages .content .msg em {
+#messages .content .msg em, #messages .content .msg u {
 	color:#999;
 }
 #messages .content .msg p {

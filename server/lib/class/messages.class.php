@@ -19,7 +19,7 @@ class messages extends table
 		if(!is_numeric($visit_id)) return false;
 		if(!is_numeric($site_id)) return false;
 		$msg = $this->db->escape($msg);
-		$sql = "INSERT INTO $this->table SET website_id=$site_id, visitor_id=$visit_id, message='$msg', direction=".($_SESSION['talker_admin']==1?0:1).", readed=0, create_date=NOW()";
+		$sql = "INSERT INTO $this->table SET website_id=$site_id, visitor_id=$visit_id, message='$msg', direction=".(isset($_SESSION['talker_admin'])?0:1).", ".(isset($_SESSION['talker_admin'])?"admin_id={$_SESSION['talker_admin']['id']}, name='{$_SESSION['talker_admin']['name']}', ":"")." readed=0, create_date=NOW()";
 		$this->db->exec($sql);
 		return $this->db->get_last_insert_id();
 	}

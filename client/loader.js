@@ -1,7 +1,5 @@
 $(document).ready(function(){
-	
 	$talker_client.load();
-	
 });
 
 
@@ -10,10 +8,11 @@ function talker_open(){
 }
 
 var $talker_client = {
-	url:"http://talk.easywebmanager.com/",
+	url:_OWL_SERVER_,
+	lang:_OWL_LANGUAGE_,
 	load:function(){
 		
-		$('body').append("<div id='_easy_talker_baloon' style='-webkit-border-radius: 10px;-moz-border-radius: 10px;border-radius: 10px;-webkit-box-shadow: 0px 0px 5px 1px #000000;-moz-box-shadow: 0px 0px 5px 1px #000000;box-shadow: 0px 0px 5px 1px #000000;display:none;position:fixed;z-index:50;top:50px;right:45px;width:150px;max-height:50px;overflow:auto;text-align:center;font-size:16px;background:#fff;cursor:pointer;color:#000;font-size:11px;font-family:Arial;padding:10px;'></div><div id='_easy_talker' style='-webkit-border-radius: 10px;-moz-border-radius: 10px;border-radius: 10px;-webkit-box-shadow: 0px 0px 5px 1px #000000;-moz-box-shadow: 0px 0px 5px 1px #000000;box-shadow: 0px 0px 5px 1px #000000;position:fixed;z-index:50;top:50px;right:0px;width:40px;height:45px;background:#000;cursor:pointer;'></div>");
+		$('body').append("<div id='_easy_talker_baloon' style='-webkit-border-radius: 10px;-moz-border-radius: 10px;border-radius: 10px;-webkit-box-shadow: 0px 0px 5px 1px #000000;-moz-box-shadow: 0px 0px 5px 1px #000000;box-shadow: 0px 0px 5px 1px #000000;display:none;position:fixed;z-index:50;top:50px;right:45px;width:150px;max-height:50px;overflow:auto;text-align:center;font-size:16px;background:#fff;cursor:pointer;color:#000;font-size:11px;font-family:Arial;padding:10px;'></div><div id='_easy_talker' title='' style='-webkit-border-radius: 10px;-moz-border-radius: 10px;border-radius: 10px;-webkit-box-shadow: 0px 0px 5px 1px #000000;-moz-box-shadow: 0px 0px 5px 1px #000000;box-shadow: 0px 0px 5px 1px #000000;position:fixed;z-index:50;top:50px;right:0px;width:40px;height:45px;background:#000;cursor:pointer;'></div>");
 		$('#_easy_talker').click(function(){ window.frames['_easy_talker_iframe'].$talker.open(); });
 		$('#_easy_talker_baloon').click(function(){ window.frames['_easy_talker_iframe'].$talker.open(); });
 		
@@ -30,8 +29,9 @@ var $talker_client = {
 	    				'<script type="text/javascript" src="' + this.url + 'client/cookie.js"></'+'script>'+
 	    				'<script type="text/javascript" src="' + this.url + 'client/jquery.js"></'+'script>'+
 	    				'<script type="text/javascript" src="' + this.url + 'client/jquery-ui.js"><'+'/script>'+
+	    				'<script type="text/javascript" src="' + this.url + 'client/lang/'+this.lang+'.js"></'+'script>'+
 	    				'<script type="text/javascript" src="' + this.url + 'client/talker.js"></'+'script>'+
-	    				'<body onload="javascript: $talker.start('+_SITE_ID_+');"></body>'+
+	    				'<body onload="javascript: $talker.start('+_OWL_SITE_ID_+');"></body>'+
 	    				'</html>';
 	    myIFrame.open();
 	    myIFrame.write(content);

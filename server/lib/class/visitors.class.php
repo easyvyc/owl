@@ -22,11 +22,14 @@ class visitors extends table
    	}
 	
 	function setOnline($site_id, $visit_id){
+		if(!is_numeric($site_id)) return false;
+		if(!is_numeric($visit_id)) return false;
 		$sql = "UPDATE $this->table SET online_time=NOW() WHERE website_id=$site_id AND id=$visit_id";
 		$this->db->exec($sql);
 	}
 	
 	function registerVisitor($site_id, $visit_id, $referer, $url){
+		if(!is_numeric($site_id)) return false;
 		$_SERVER['HTTP_REFERER'] = urldecode($referer);
 		$this->visitorInfo = new visitorInfo($_SERVER);
 		if(is_numeric($visit_id)){
